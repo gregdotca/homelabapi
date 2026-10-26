@@ -1,6 +1,16 @@
 HomelabAPI CHANGELOG
 ====================
-Unreleased
+v0.11.2     2026-10-25
+- Updated certifi from 2026.7.22 to 2026.10.23, after eMudhra lost
+  control of eight of its intermediate CA keys. Its CA bundle, which
+  outputs use to check HTTPS servers, no longer trusts eMudhra's
+  emSign ECC Root CA - G3, emSign Root CA - C1, and emSign ECC Root
+  CA - C3. It keeps emSign Root CA - G1, which Mozilla still trusts.
+  The compromised intermediates chain to emSign ECC Root CA - G3, and
+  others have since issued certificates with those keys, so with the
+  old bundle anyone holding the keys could have impersonated an
+  output's HTTPS server. The email output uses the system CA store in
+  the Docker image, which doesn't include G3
 - Removed the "Source Code" link (https://homelabapi.org/source/) from
   README.md. homelabapi.org redirects to GitHub and keeps the path, so
   the link led to a GitHub 404

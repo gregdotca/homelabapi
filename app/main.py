@@ -87,7 +87,7 @@ with open("/code/app/config.yaml", mode="rt", encoding="utf-8") as file:
                 outputs["webhook"] = value
 
 app_dir = "app"
-api_version = "0.12.0"
+api_version = "0.12.1"
 
 api_description = "Welcome to " + api_title + "."
 input_success = "Success! Your input request was accepted by " + api_title
@@ -291,13 +291,6 @@ app = FastAPI(
     # (Healthchecks webhooks send none)
     strict_content_type=False,
     openapi_tags=tags_metadata,
-    swagger_ui_default_parameters={
-        "dom_id": "#swagger-ui",
-        "layout": "BaseLayout",
-        "deepLinking": True,
-        "showExtensions": True,
-        "showCommonExtensions": True,
-    },
 )
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 

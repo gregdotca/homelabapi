@@ -1,5 +1,15 @@
 HomelabAPI CHANGELOG
 ====================
+v0.12.0     2026-11-10
+- Each output that sends successfully now logs one line with the
+  notification's subject, such as "Output 'telegram' sent: Backup", so
+  a notification can be confirmed from the container log. Only the
+  subject is logged, cut to 100 characters with control characters
+  removed. Set "log_sent_outputs" to false in config.yaml to turn it off
+- An unknown name in "current_outputs" (such as a typo), or an output
+  with no accounts configured, is now logged as a failed output instead
+  of being skipped silently
+
 v0.11.2     2026-10-25
 - Updated certifi from 2026.7.22 to 2026.10.23, after eMudhra lost
   control of eight of its intermediate CA keys. Its CA bundle, which

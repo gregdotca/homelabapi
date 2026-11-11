@@ -2,6 +2,7 @@ application:
   api_name: "HomelabAPI"
   api_key: "abc123def456ghi789j0abc123def456ghi789j0"
   current_outputs: "telegram"
+  log_sent_outputs: true  # log "Output '<name>' sent: <subject>" for each output that sends
 
 outputs:
   discord:

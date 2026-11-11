@@ -3,6 +3,7 @@ import json
 import requests
 import smtplib
 import ssl
+import unicodedata
 import uuid
 import yaml
 from typing import Optional
@@ -32,6 +33,9 @@ all_outputs = (
 with open("/code/app/config.yaml", mode="rt", encoding="utf-8") as file:
     configuration = yaml.safe_load(file)
 
+    # On unless turned off, so existing configs log sent outputs too
+    log_sent_outputs = True
+
     app_settings = configuration["application"]
     for key, value in app_settings.items():
         match key:
@@ -50,6 +54,14 @@ with open("/code/app/config.yaml", mode="rt", encoding="utf-8") as file:
                         current_outputs = all_outputs
                     else:
                         current_outputs = [value.strip()]
+            case "log_sent_outputs":
+                # Accept a YAML boolean or a quoted string such as "false"
+                log_sent_outputs = str(value).strip().lower() not in (
+                    "false",
+                    "no",
+                    "off",
+                    "0",
+                )
 
     outputs = {}
     output_settings = configuration["outputs"]
@@ -75,7 +87,7 @@ with open("/code/app/config.yaml", mode="rt", encoding="utf-8") as file:
                 outputs["webhook"] = value
 
 app_dir = "app"
-api_version = "0.11.2"
+api_version = "0.12.0"
 
 api_description = "Welcome to " + api_title + "."
 input_success = "Success! Your input request was accepted by " + api_title
@@ -1112,6 +1124,24 @@ async def webhook_tailscale(api_key: str, payload: Request):
         return invalid_api_key()
 
 
+def log_safe_subject(subject):
+
+    unsafe_categories = ("Cc", "Cf", "Cn", "Co", "Cs", "Zl", "Zp")
+
+    # Turn control and line-break characters into spaces, so a caller can't forge
+    # extra log lines, then cut it to a sensible length
+    text = "".join(
+        " " if unicodedata.category(char) in unsafe_categories else char
+        for char in str(subject)
+    )
+    text = " ".join(text.split())
+
+    if len(text) > 100:
+        text = text[:100] + "..."
+
+    return text
+
+
 def send_output(request_body, subject, message, url, priority):
 
     failed = False
@@ -1119,6 +1149,11 @@ def send_output(request_body, subject, message, url, priority):
     for output in current_outputs:
 
         try:
+
+            # An unknown name (such as a typo) or an output with no accounts sends
+            # nothing, so it mustn't be logged as sent
+            if not outputs.get(output):
+                raise ValueError("No accounts configured")
 
             match output:
                 case "discord":
@@ -1139,6 +1174,13 @@ def send_output(request_body, subject, message, url, priority):
                     send_telegram(subject, message, url)
                 case "webhook":
                     send_webhook(request_body)
+
+            # Log only the subject, so a notification can be confirmed from the log
+            if log_sent_outputs:
+                print(
+                    "Output '" + output + "' sent: " + log_safe_subject(subject),
+                    flush=True,
+                )
 
         except (Exception, SystemExit) as error:
 

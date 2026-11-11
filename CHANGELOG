@@ -1,5 +1,8 @@
 HomelabAPI CHANGELOG
 ====================
+Unreleased
+- Linked the rating in ACR.md to its page on aicoderating.com
+
 v0.12.1     2026-11-10
 - Updated FastAPI from 0.143.0 to 0.162.0
 - Removed the unused swagger_ui_default_parameters setting, which

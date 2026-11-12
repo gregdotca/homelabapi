@@ -3,7 +3,7 @@
 # pydantic, pyyaml, requests, and uvicorn.
 annotated-doc==0.0.5
 annotated-types==0.8.0
-anyio==4.15.1
+anyio==4.16.0
 certifi==2026.10.23
 charset-normalizer==3.5.2
 click==8.5.0
@@ -13,9 +13,9 @@ h11==0.16.0
 idna==3.20
 Jinja2==3.1.6
 MarkupSafe==3.0.4
-opentelemetry-api==1.45.1
-pydantic==2.14.1
-pydantic_core==2.50.1
+opentelemetry-api==1.45.2
+pydantic==2.14.2
+pydantic_core==2.50.2
 PyYAML==6.0.3
 requests==2.34.2
 starlette==1.7.0

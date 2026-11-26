@@ -1,6 +1,10 @@
 HomelabAPI CHANGELOG
 ====================
-Unreleased
+v0.12.2     2026-11-26
+- The LazyLibrarian webhook now accepts the body that newer versions of
+  LazyLibrarian send. That body is missing its closing brace and doesn't
+  escape quotes in book titles. Older versions sent valid JSON and
+  worked, but notifications from the newer ones were being rejected
 - Linked the rating in ACR.md to its page on aicoderating.com
 
 v0.12.1     2026-11-10

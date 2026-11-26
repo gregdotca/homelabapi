@@ -1,5 +1,6 @@
 import html
 import json
+import re
 import requests
 import smtplib
 import ssl
@@ -87,7 +88,7 @@ with open("/code/app/config.yaml", mode="rt", encoding="utf-8") as file:
                 outputs["webhook"] = value
 
 app_dir = "app"
-api_version = "0.12.1"
+api_version = "0.12.2"
 
 api_description = "Welcome to " + api_title + "."
 input_success = "Success! Your input request was accepted by " + api_title
@@ -922,7 +923,7 @@ async def webhook_lazylibrarian(api_key: str, payload: Request):
 
         try:
 
-            result = await payload.json()
+            result = parse_lazylibrarian_body(await payload.body())
             send_output(result, subject_lazylibrarian, result["text"], "", 0)
             return {"result": input_success}
 
@@ -1133,6 +1134,41 @@ def log_safe_subject(subject):
         text = text[:100] + "..."
 
     return text
+
+
+def parse_lazylibrarian_body(body):
+
+    # Valid JSON is parsed as it always was
+    try:
+        return json.loads(body)
+    except ValueError:
+        pass
+
+    text = body.decode("utf-8", errors="replace")
+
+    if not text.lstrip().startswith("{"):
+        raise ValueError("Body isn't a JSON object")
+
+    # Newer LazyLibrarian versions build their JSON by hand (older ones sent valid
+    # JSON): they leave off the closing brace and don't escape the message, so add
+    # the brace and double any backslashes so they stay as sent instead of being
+    # read as escapes
+    try:
+        return json.loads(text.replace("\\", "\\\\").rstrip() + "}", strict=False)
+    except json.JSONDecodeError:
+        pass
+
+    # A quote in a book title still breaks it, so take everything from the start
+    # of "text" up to the last quote, since "text" is the last field it sends
+    match = re.search(r'"text"\s*:\s*"', text)
+    if match is None:
+        raise ValueError("No text field found")
+
+    end = text.rfind('"')
+    if end < match.end():
+        end = len(text)
+
+    return {"text": text[match.end() : end]}
 
 
 def send_output(request_body, subject, message, url, priority):
